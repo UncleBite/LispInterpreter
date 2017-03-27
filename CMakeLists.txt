@@ -26,10 +26,12 @@ set(interpreter_src
 # excluding tests
 set(gui_src
   qgraphics_arc_item.hpp qgraphics_arc_item.cpp
+  qgraphics_point_item.hpp qgraphics_point_item.cpp
   message_widget.hpp message_widget.cpp
   canvas_widget.hpp canvas_widget.cpp
   repl_widget.hpp repl_widget.cpp
   qt_interpreter.hpp qt_interpreter.cpp
+  qt_environment.hpp qt_environment.cpp
   main_window.hpp main_window.cpp
   )
 

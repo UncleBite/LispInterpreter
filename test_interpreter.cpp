@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "interpreter_semantic_error.hpp"
+
 #include "interpreter.hpp"
 #include "expression.hpp"
 #include "test_config.hpp"
@@ -361,7 +361,7 @@ TEST_CASE( "Test trig procedures", "[interpreter]" ) {
 
 TEST_CASE( "Test some semantically invalid expresions", "[interpreter]" ) {
   
-  std::vector<std::string> programs = {"(@ none)", // so such procedure
+  std::vector<std::string> programs = {"(@ none)"// so such procedure
 				       "(- 1 1 2)", // too many arguments
 				       "(define if 1)", // redefine special form
 				       "(define pi 3.14)"}; // redefine builtin symbol
@@ -372,7 +372,6 @@ TEST_CASE( "Test some semantically invalid expresions", "[interpreter]" ) {
       
       bool ok = interp.parse(iss);
       REQUIRE(ok == true);
-
       REQUIRE_THROWS_AS(interp.eval(), InterpreterSemanticError);
     }
 }
@@ -449,7 +448,7 @@ TEST_CASE( "Test syntactically INCORRECT files", "[interpreter]" ) {
 TEST_CASE( "Test all syntactically and semantically CORRECT files.", "[interpreter]" ) {
 
   const int START_TEST = 2;
-  const int LAST_TEST = 5;
+  const int LAST_TEST = 4;
   std::string base = TEST_FILE_DIR + "/test";
   
   for(int i = START_TEST; i <= LAST_TEST; ++i){

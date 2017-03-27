@@ -1,13 +1,6 @@
-//
-//  environment.hpp
-//  project1
-//
-//  Created by yuqiao liang on 2/14/17.
-//  Copyright © 2017 yuqiao liang. All rights reserved.
-//
+#ifndef ENVIRONMENT_H
+#define ENVIRONMENT_H
 
-#ifndef environment_hpp
-#define environment_hpp
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -21,7 +14,7 @@ class Environment
 {
 
 public:
-    
+
     Environment();
     bool boolean_allow(std::string str);
     bool number_allow(std::string str);
@@ -35,5 +28,4 @@ public:
     std::map<std::string, double>::iterator it_num = number_map.begin();
 };
 
-
-#endif /* environment_hpp */
+#endif // ENVIRONMENT_H

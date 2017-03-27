@@ -37,7 +37,7 @@ private:
 void TestGUI::initTestCase() {
 
   repl = w.findChild<REPLWidget *>();
-  QVERIFY2(repl, "Could not find REPLWidget instance in MainWindow instance.");
+ QVERIFY2(repl, "Could not find REPLWidget instance in MainWindow instance.");
 
   replEdit = repl->findChild<QLineEdit *>();
   QVERIFY2(replEdit,

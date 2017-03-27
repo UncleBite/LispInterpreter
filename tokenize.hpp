@@ -6,8 +6,8 @@
 //  Copyright © 2017 yuqiao liang. All rights reserved.
 //
 
-#ifndef tokenize_h
-#define tokenize_h
+#ifndef TOKENIZE_H
+#define TOKENIZE_H
 
 #include <iostream>
 #include <vector>
@@ -26,10 +26,10 @@
 #include <cctype>
 #include <stdlib.h>     /* strtod */
 
-
 #include "interpreter.hpp"
 
-std::list<std::string> tokenize(const std::string &str);
+
+std::list<std::string> token(const std::string &str);
 
 
 std::string repl();
@@ -37,12 +37,7 @@ std::string repl();
 list build_ast(std::list<std::string> &token);
 bool isnumeric(std::string st);
 
-
-
-
-
 Expression atom(std::string token);
 
 
-
-#endif /* tokenize_h */
+#endif // TOKENIZE_H

@@ -1,12 +1,5 @@
-//
-//  environment.cpp
-//  project1
-//
-//  Created by yuqiao liang on 2/14/17.
-//  Copyright © 2017 yuqiao liang. All rights reserved.
-//
-
 #include "environment.hpp"
+
 
 
 
@@ -36,7 +29,7 @@ void Environment::add_boolean_map(std::string str,bool bool_value)
     {
         throw InterpreterSemanticError("Error: already defined");
     }
-    
+
     return;
 }
 void Environment::add_number_map(std::string str, double num_value)
@@ -67,4 +60,3 @@ double Environment::return_number(std::string str)
     it_num = number_map.find(str);
     return it_num->second;
 }
-

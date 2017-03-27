@@ -1,12 +1,3 @@
-//
-//  interpreter.cpp
-//  project1
-//
-//  Created by yuqiao liang /Users/Frank/Documents/3574/project1/project1/project1-UncleBite/tokenize.cppon 2/13/17.
-//  Copyright © 2017 yuqiao liang. All rights reserved.
-//
-
-
 #include "interpreter.hpp"
 
 Interpreter::Interpreter()
@@ -19,9 +10,8 @@ Interpreter::Interpreter()
 
 Expression Interpreter::eval()
 {
-
     Expression exp;
-    exp = traversePost(mylist);
+    exp = parseStatement(mylist);
     if (exp.val.type==Number)
     {
         std::cout<<"("<<exp.val.num_value<<")"<<std::endl;
@@ -29,169 +19,231 @@ Expression Interpreter::eval()
     else if (exp.val.type ==Boolean)
     {
         if (exp.val.bool_value)
-                    std::cout<<"("<<"True"<<")"<<std::endl;
+        std::cout<<"("<<"True"<<")"<<std::endl;
         else
-                    std::cout<<"("<<"False"<<")"<<std::endl;
+        std::cout<<"("<<"False"<<")"<<std::endl;
     }
     return exp;
-
 }
 
 
- Expression Interpreter::traversePost(list _list)
+Expression Interpreter::parseStatement(list node)
 {
-    
+    return this->parseDefineStatement(node);
+}
 
-       if (_list.a.val.type== Number)
-       {
-           if (!_list.children.empty() )
-           {
-               throw InterpreterSemanticError("Error: children is not empty");
-           }
-           else
-               
-           return Expression(_list.a.val.num_value);
-       }
-        else if (_list.a.val.type == Boolean)
+Expression Interpreter::parseDefineStatement(list node)
+{
+    if(node.a.val.string_value == DEFINE)
+    {
+        if(node.children.size() == 2)
         {
-            if (!_list.children.empty() )
+            Expression identifier = parseIdentifer(node.children[0]);
+            Expression value = parseAssignmentValue(identifier.val.string_value, node.children[1]);
+            
+            if ( !value.isType(Number) && !value.isType(Boolean))
             {
-               throw InterpreterSemanticError("Error: children is not empty");
+            throw InterpreterSemanticError("Error: DEFINE wrong");
+            }
+            return value;
+        }
+        else {
+            throw InterpreterSemanticError("Error: DEFINE has invalid arguments count");
+        }
+    }
+    return this->parseBeginStatement(node);
+}
+Expression Interpreter::parseBeginStatement(list node)
+{
+    if(node.a.val.string_value == BEGIN)
+    {
+        if(node.children.empty())
+        {
+            throw InterpreterSemanticError("Error: children is empty");
+        }
+        else
+        {
+            Expression temp;
+            for (int i = 0; i<node.children.size(); i++)
+            {
+                temp = parseStatement(node.children[i]);
+            }
+            return temp;
+        }
+    }
+    return this->parseIfStatement(node);
+}
+Expression Interpreter::parseIfStatement(list node)
+{
+    if(node.a.val.string_value == IF)
+    {
+        if (node.children.size() == 3)
+        {
+            Expression temp1 = parseStatement(node.children[0]);
+            Expression temp2 = parseStatement(node.children[1]);
+            Expression temp3 = parseStatement(node.children[2]);
+            if (temp1.val.type == Boolean)
+            {
+                if(temp1.val.bool_value == true)
+                return temp2;
+                return temp3;
+            }
+            throw InterpreterSemanticError("Error: argument didn't return boolean value");
+        }
+        else
+        throw InterpreterSemanticError("Error: children number is wrong");
+        
+    }
+    return this->parseExpression(node);
+}
+
+Expression Interpreter::parseExpression(list node){
+    return parseSymbol(node);
+}
+
+Expression Interpreter::parseIdentifer(list node)
+{
+    if(node.a.isIdentifier())
+    {
+        if(node.children.empty()){
+            return node.a;
+        }
+        throwError("Error: invalid identifier");
+    }
+    throw InterpreterSemanticError("Error: expect a identifier");
+}
+
+
+Expression Interpreter::parseSymbol(list node){
+    if (node.a.val.type == Symbol)
+    {
+        if (node.a.val.string_value == "+")
+        {
+            if(node.children.empty())
+            {
+                throw InterpreterSemanticError("Error: children is empty");
             }
             else
-                return Expression(_list.a.val.bool_value);
-            
-            return Expression(_list.a.val.bool_value);
-        }
-        else if (_list.a.val.type == Symbol)
-        {
-            if (_list.a.val.string_value == "+")
             {
-                if(_list.children.empty())
+                double sum = 0;
+                for (int i = 0; i<node.children.size(); i++)
                 {
-               throw InterpreterSemanticError("Error: children is empty");
+                    Expression temp = parseStatement(node.children[i]);
+                    if (temp.isType(Number))
+                    {
+                        sum=sum+temp.val.num_value;
+                    }
+                    else
+                    {
+                        throw InterpreterSemanticError("Error: children is wrong type");
+                    }
                 }
-                else
+                return Expression(sum);
+            }
+        }
+        else if (node.a.val.string_value == "*")
+        {
+            if(node.children.empty())
+            {
+                throw InterpreterSemanticError("Error: children is empty");
+            }
+            else
+            {
+                double product = 1;
+                for (int i = 0; i<node.children.size(); i++)
                 {
-                    double sum = 0;
-                for (int i = 0; i<_list.children.size(); i++)
-                {
-                    Expression temp = traversePost(_list.children[i]);
+                    Expression temp = parseStatement(node.children[i]);
+                    
                     if (temp.val.type != Number && temp.val.type != Symbol)
                     {
                         throw InterpreterSemanticError("Error: children is wrong type");
                     }
                     else
                     {
-                        sum=sum+temp.val.num_value;
+                        product=product*temp.val.num_value;
                     }
                 }
-                    return Expression(sum);
-                }
+                return Expression(product);
             }
-    else if (_list.a.val.string_value == "*")
-    {
-        if(_list.children.empty())
-        {
-               throw InterpreterSemanticError("Error: children is empty");
         }
-        else
+        else if (node.a.val.string_value == "-")
         {
-            double product = 1;
-            for (int i = 0; i<_list.children.size(); i++)
-            {
-                Expression temp = traversePost(_list.children[i]);
-
-                if (temp.val.type != Number && temp.val.type != Symbol)
-                {
-               throw InterpreterSemanticError("Error: children is wrong type");
-                }
-                else
-                {
-                    product=product*temp.val.num_value;
-                }
-            }
-            return Expression(product);
-        }
-    }
-    else if (_list.a.val.string_value == "-")
-    {
             double difference = 0;
             double negation = 0;
-            if (_list.children.size() ==1)
+            if (node.children.size() ==1)
             {
-                Expression temp = traversePost(_list.children[0]);
+                Expression temp = parseStatement(node.children[0]);
                 if (temp.val.type==Number&&temp.val.type != Symbol)
                 {
                     negation = 0 - temp.val.num_value;
                     return Expression(negation);
                 }
-               throw InterpreterSemanticError("Error: children is not a number");
+                throw InterpreterSemanticError("Error: children is not a number");
             }
-            else if (_list.children.size() == 2)
+            else if (node.children.size() == 2)
             {
-                Expression temp1 = traversePost(_list.children[0]);
-                Expression temp2 = traversePost(_list.children[1]);
-             if(temp1.val.type == Number && temp2.val.type == Number )
-             {
-                 difference =temp1.val.num_value-temp2.val.num_value;
-                 return Expression(difference);
-             }
-               throw InterpreterSemanticError("Error: children is not a number");
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
+                {
+                    difference =temp1.val.num_value-temp2.val.num_value;
+                    return Expression(difference);
+                }
+                throw InterpreterSemanticError("Error: children is not a number");
             }
             else
             throw InterpreterSemanticError("Error: children number is wrong");
-        
-    }
-    else if (_list.a.val.string_value == "/")
-    {
-        double quotient = 1;
-        if (_list.children.size() == 2)
-        {
-            Expression temp1 = traversePost(_list.children[0]);
-            Expression temp2 = traversePost(_list.children[1]);
-            if(temp1.val.type == Number && temp2.val.type == Number )
-            {
-                quotient =temp1.val.num_value / temp2.val.num_value;
-                return Expression(quotient);
-            }
-                throw InterpreterSemanticError("Error: children is not a number");
+            
         }
-        else
-        throw InterpreterSemanticError("Error: children number is wrong");
-    }
-            else if (_list.a.val.string_value == "not")
+        else if (node.a.val.string_value == "/")
+        {
+            double quotient = 1;
+            if (node.children.size() == 2)
             {
-                if(_list.children.empty())
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
                 {
-                    throw InterpreterSemanticError("Error: children is empty");
+                    quotient =temp1.val.num_value / temp2.val.num_value;
+                    return Expression(quotient);
                 }
-                else if (_list.children.size() == 1)
-                {
-                    if (_list.children[0].a.val.bool_value == true) {
-                        return Expression(false);
-                    }
-                    if (_list.children[0].a.val.bool_value == false)
-                        return Expression(true);
-                        throw InterpreterSemanticError("Error: argument type is not correct");
-                }
-                else
-                {
-                      throw InterpreterSemanticError("Error: not valid number of argument");
-                }
+                throw InterpreterSemanticError("Error: children is not a number");
             }
-            else if (_list.a.val.string_value == "and")
+            else
+            throw InterpreterSemanticError("Error: children number is wrong");
+        }
+        else if (node.a.val.string_value == "not")
+        {
+            if(node.children.empty())
             {
-                if(_list.children.empty())
-                {
-                    throw InterpreterSemanticError("Error: children is empty");
+                throw InterpreterSemanticError("Error: children is empty");
+            }
+            else if (node.children.size() == 1)
+            {
+                if (node.children[0].a.val.bool_value == true) {
+                    return Expression(false);
                 }
-                else
+                if (node.children[0].a.val.bool_value == false)
+                return Expression(true);
+                throw InterpreterSemanticError("Error: argument type is not correct");
+            }
+            else
+            {
+                throw InterpreterSemanticError("Error: not valid number of argument");
+            }
+        }
+        else if (node.a.val.string_value == "and")
+        {
+            if(node.children.empty())
+            {
+                throw InterpreterSemanticError("Error: children is empty");
+            }
+            else
+            {
+                bool logic_result = true;
+                for (int i = 0; i<node.children.size(); i++)
                 {
-                    bool logic_result = true;
-                for (int i = 0; i<_list.children.size(); i++)
-                {
-                    Expression temp = traversePost(_list.children[i]);
+                    Expression temp = parseStatement(node.children[i]);
                     
                     if (temp.val.type != Boolean)
                     {
@@ -202,207 +254,185 @@ Expression Interpreter::eval()
                         logic_result= logic_result && temp.val.bool_value;
                     }
                 }
-                    return Expression(logic_result);
-                }
+                return Expression(logic_result);
             }
-            else if (_list.a.val.string_value == "or")
+        }
+        else if (node.a.val.string_value == "or")
+        {
+            if(node.children.empty())
             {
-                if(_list.children.empty())
-                {
-                    throw InterpreterSemanticError("Error: children is empty");
-                }
-                else
-                {
-                    bool logic_result = false;
-                    for (int i = 0; i<_list.children.size(); i++)
-                    {
-                        Expression temp = traversePost(_list.children[i]);
-                        
-                        if (temp.val.type != Boolean)
-                        {
-                            throw InterpreterSemanticError("Error: children is not logic operator");
-                        }
-                        else
-                        {
-                            logic_result= logic_result || temp.val.bool_value;
-                        }
-                    }
-                    return Expression(logic_result);
-                }
-            }
-            else if (_list.a.val.string_value == "<" )
-            {
-
-                if (_list.children.size() == 2)
-                {
-                    Expression temp1 = traversePost(_list.children[0]);
-                    Expression temp2 = traversePost(_list.children[1]);
-                    if(temp1.val.type == Number && temp2.val.type == Number )
-                    {
-                        if (temp1.val.num_value < temp2.val.num_value)
-                        return Expression(true);
-                        return Expression(false);
-                    }
-                        throw InterpreterSemanticError("Error: children is not a number");
-                }
-                else
-                    throw InterpreterSemanticError("Error: children number is wrong");
-            }
-            else if (_list.a.val.string_value == "<=" )
-            {
-                
-                if (_list.children.size() == 2)
-                {
-                    Expression temp1 = traversePost(_list.children[0]);
-                    Expression temp2 = traversePost(_list.children[1]);
-                    if(temp1.val.type == Number && temp2.val.type == Number )
-                    {
-                        if (temp1.val.num_value < temp2.val.num_value)
-                            return Expression(true);
-                        if (temp1.val.num_value == temp2.val.num_value)
-                            return Expression(true);
-                            return Expression(false);
-                    }
-                        throw InterpreterSemanticError("Error: children is not a number");
-                }
-                    throw InterpreterSemanticError("Error: children number is wrong");
-            }
-            else if (_list.a.val.string_value == ">" )
-            {
-                
-                if (_list.children.size() == 2)
-                {
-                    Expression temp1 = traversePost(_list.children[0]);
-                    Expression temp2 = traversePost(_list.children[1]);
-                    if(temp1.val.type == Number && temp2.val.type == Number )
-                    {
-                        if (temp1.val.num_value > temp2.val.num_value)
-                            return Expression(true);
-                            return Expression(false);
-                    }
-                        throw InterpreterSemanticError("Error: children is not a number");
-                }
-                else
-                    throw InterpreterSemanticError("Error: children number is wrong");
-                
-            }
-            else if (_list.a.val.string_value == ">=" )
-            {
-                if (_list.children.size() == 2)
-                {
-                    Expression temp1 = traversePost(_list.children[0]);
-                    Expression temp2 = traversePost(_list.children[1]);
-                    if(temp1.val.type == Number && temp2.val.type == Number )
-                    {
-                        if (temp1.val.num_value > temp2.val.num_value)
-                            return Expression(true);
-                        if (temp1.val.num_value == temp2.val.num_value)
-                            return Expression(true);
-                            return Expression(false);
-                    }
-                        throw InterpreterSemanticError("Error: children is not a number");
-                }
-                    throw InterpreterSemanticError("Error: children number is wrong");
-            }
-            else if (_list.a.val.string_value == "=" )
-            {
-                if (_list.children.size() == 2)
-                {
-                    Expression temp1 = traversePost(_list.children[0]);
-                    Expression temp2 = traversePost(_list.children[1]);
-                    if(temp1.val.type == Number && temp2.val.type == Number )
-                    {
-                        if (temp1.val.num_value == temp2.val.num_value)
-                            return Expression(true);
-                            return Expression(false);
-                    }
-                        throw InterpreterSemanticError("Error: children is not a number");
-                }
-                    throw InterpreterSemanticError("Error: children number is wrong");
+                throw InterpreterSemanticError("Error: children is empty");
             }
             else
             {
-                if (env.number_map.find(_list.a.val.string_value)!= env.number_map.end()) //find the number
+                bool logic_result = false;
+                for (int i = 0; i<node.children.size(); i++)
                 {
-                    return Expression(env.return_number(_list.a.val.string_value)) ;
-                }
-                if(env.boolean_map.find(_list.a.val.string_value)!= env.boolean_map.end())
-                {
-                    return Expression(env.return_boolean(_list.a.val.string_value));
-                }
-            }
-        }
-        else if (_list.a.val.type == Special_symbol)
-        {
-            if (_list.a.val.string_value == "if")
-            {
-                if (_list.children.size() == 3)
-                {
-                    Expression temp1 = traversePost(_list.children[0]);
-                    Expression temp2 = traversePost(_list.children[1]);
-                    Expression temp3 = traversePost(_list.children[2]);
-                    if (temp1.val.type==Boolean)
+                    Expression temp = parseStatement(node.children[i]);
+                    
+                    if (temp.val.type != Boolean)
                     {
-                        if(temp1.val.bool_value == true )
-                            return temp2;
-                            return temp3;
-                    }
-                        throw InterpreterSemanticError("Error: argument didn't return boolean value");
-                }
-                else
-                    throw InterpreterSemanticError("Error: children number is wrong");
-            }
-            else if (_list.a.val.string_value == "begin")
-            {
-                if(_list.children.empty())
-                {
-                    throw InterpreterSemanticError("Error: children is empty");
-                }
-                else
-                {
-                    Expression temp;
-                    for (int i = 0; i<_list.children.size(); i++)
-                    {
-                        temp = traversePost(_list.children[i]);
-                    }
-                    return temp;
-                }
-            }
-            else if (_list.a.val.string_value == "define")
-            {
-                if (_list.children.size() == 2)
-                {
-                    if (_list.children[0].a.val.string_value == "begin"||_list.children[0].a.val.string_value == "define"||_list.children[0].a.val.string_value == "if")
-                    {
-                        throw InterpreterSemanticError("Error: DEFINE is not valid");
-                        return Expression();
-                    }
-                    Expression temp0 = traversePost(_list.children[0]);
-                    Expression temp = traversePost(_list.children[1]);
-                    if (env.boolean_allow(_list.children[0].a.val.string_value)&& temp.val.type==Boolean)
-                    {
-                    env.add_boolean_map(_list.children[0].a.val.string_value, temp.val.bool_value);
-                        return Expression(temp.val.bool_value);
-                    }
-                    else if (env.number_allow(_list.children[0].a.val.string_value)&& temp.val.type==Number)
-                    {
-                    env.add_number_map(_list.children[0].a.val.string_value, temp.val.num_value);
-                        return Expression(temp.val.num_value);
+                        throw InterpreterSemanticError("Error: children is not logic operator");
                     }
                     else
-                    throw InterpreterSemanticError("Error: DEFINE not valid");
+                    {
+                        logic_result= logic_result || temp.val.bool_value;
+                    }
                 }
-                else
-                    throw InterpreterSemanticError("Error: DEFINE has too much arguments");
-           }
+                return Expression(logic_result);
+            }
         }
-        else
-              throw InterpreterSemanticError("Error: eval not valid");
-    return Expression();
-
+        else if (node.a.val.string_value == "<" )
+        {
+            
+            if (node.children.size() == 2)
+            {
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
+                {
+                    if (temp1.val.num_value < temp2.val.num_value)
+                    return Expression(true);
+                    return Expression(false);
+                }
+                throw InterpreterSemanticError("Error: children is not a number");
+            }
+            else
+            throw InterpreterSemanticError("Error: children number is wrong");
+        }
+        else if (node.a.val.string_value == "<=" )
+        {
+            
+            if (node.children.size() == 2)
+            {
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
+                {
+                    if (temp1.val.num_value < temp2.val.num_value)
+                    return Expression(true);
+                    if (temp1.val.num_value == temp2.val.num_value)
+                    return Expression(true);
+                    return Expression(false);
+                }
+                throw InterpreterSemanticError("Error: children is not a number");
+            }
+            throw InterpreterSemanticError("Error: children number is wrong");
+        }
+        else if (node.a.val.string_value == ">" )
+        {
+            
+            if (node.children.size() == 2)
+            {
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
+                {
+                    if (temp1.val.num_value > temp2.val.num_value)
+                    return Expression(true);
+                    return Expression(false);
+                }
+                throw InterpreterSemanticError("Error: children is not a number");
+            }
+            else
+            throw InterpreterSemanticError("Error: children number is wrong");
+            
+        }
+        else if (node.a.val.string_value == ">=" )
+        {
+            if (node.children.size() == 2)
+            {
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
+                {
+                    if (temp1.val.num_value > temp2.val.num_value)
+                    return Expression(true);
+                    if (temp1.val.num_value == temp2.val.num_value)
+                    return Expression(true);
+                    return Expression(false);
+                }
+                throw InterpreterSemanticError("Error: children is not a number");
+            }
+            throw InterpreterSemanticError("Error: children number is wrong");
+        }
+        else if (node.a.val.string_value == "=" )
+        {
+            if (node.children.size() == 2)
+            {
+                Expression temp1 = parseStatement(node.children[0]);
+                Expression temp2 = parseStatement(node.children[1]);
+                if(temp1.val.type == Number && temp2.val.type == Number )
+                {
+                    if (temp1.val.num_value == temp2.val.num_value)
+                    return Expression(true);
+                    return Expression(false);
+                }
+                throw InterpreterSemanticError("Error: children is not a number");
+            }
+            throw InterpreterSemanticError("Error: children number is wrong");
+        }
+    }
+    return parseValue(node);
 }
 
+Expression Interpreter::parseValue(list node){
+    if (node.a.val.type == Number)
+    {
+        if (!node.children.empty() )
+        {
+            throw InterpreterSemanticError("Error: children is not empty");
+        }
+        else
+        return Expression(node.a.val.num_value);
+    }
+    else if (node.a.val.type == Boolean)
+    {
+        if (!node.children.empty() )
+        {
+            throw InterpreterSemanticError("Error: children is not empty");
+        }
+        else
+        return Expression(node.a.val.bool_value);
+        
+        return Expression(node.a.val.bool_value);
+    }
+    else {
+        if (env.number_map.find(node.a.val.string_value)!= env.number_map.end()) //find the number
+        {
+            return Expression(env.return_number(node.a.val.string_value)) ;
+        } else if(env.boolean_map.find(node.a.val.string_value)!= env.boolean_map.end())
+        {
+            return Expression(env.return_boolean(node.a.val.string_value));
+        } else {
+            return Expression();
+        }
+    }
+}
 
+Expression Interpreter::parseAssignmentValue(std::string identifier, list node)
+{
+    if (node.a.val.type == Boolean )
+    {
+        if(env.boolean_allow(identifier)){
+            env.add_boolean_map(identifier, node.a.val.bool_value);
+            return Expression(node.a.val.bool_value);
+        } else {
+            throwError("Error: identifier already defined");
+        }
+    }
+    else if (node.a.val.type == Number && env.number_allow(identifier))
+    {
+        if(env.boolean_allow(identifier)){
+            env.add_number_map(identifier, node.a.val.num_value);
+            return Expression(node.a.val.num_value);
+        } else {
+            throwError("Error: identifier already defined");
+        }
+    }
+    return Expression();
+}
 
-
-
+void Interpreter::throwError(std::string msg){
+    throw InterpreterSemanticError(msg);
+}
