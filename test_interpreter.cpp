@@ -382,18 +382,18 @@ TEST_CASE("Test graphic types", "[interpreter]") {
     std::string program = "(point 0 0)";
     std::istringstream iss(program);
     Interpreter interp;
-
     REQUIRE(interp.parse(iss));
     REQUIRE(interp.eval() == Expression(std::make_tuple(0., 0.)));
-  }
+     
+}
   {
     std::string program = "(line (point 0 0) (point 10 0))";
     std::istringstream iss(program);
     Interpreter interp;
-
     REQUIRE(interp.parse(iss));
     REQUIRE(interp.eval() ==
             Expression(std::make_tuple(0., 0.), std::make_tuple(10., 0.)));
+
   }
   {
     std::string program = "(arc (point 0 0) (point 10 0) pi)";

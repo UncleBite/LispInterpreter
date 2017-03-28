@@ -5,12 +5,13 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QGridLayout>
-
+#include <QLabel>
 class REPLWidget : public QWidget
 {
     Q_OBJECT
 public:
     REPLWidget(QWidget *parent = nullptr);
+    QLabel* scriptLabel;
     QLineEdit* lineEdit;
 
 signals:

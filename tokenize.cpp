@@ -70,10 +70,10 @@ Expression atom(std::string token)
 {
     if (
         token == "define"||token == "if"||token == "begin" ||
-        token == ""
+        token == ""|| token == "draw"|| token == "line"||
+            token == "point"||token == "arc"
     )
     {
-
         return Expression(token); //symbol
     }
     else if (token == "True")
@@ -84,10 +84,11 @@ Expression atom(std::string token)
     {
         return Expression(false);
     }
-    else if (isnumeric(token) && isalpha(token.c_str()[0]) == 0)
+    else if (isnumeric(token) )
     {
         return Expression(atof(token.c_str()));//number
     }
+
     else
     {
         int i =0;
@@ -102,30 +103,11 @@ Expression atom(std::string token)
 }
 
 bool isnumeric(std::string st) {
-    int len = st.length(), ascii_code, decimal_count = -1, negative_count = -1;
-    for (int i = 0; i < len; i++) {
-        ascii_code = int(st[i]);
-        switch (ascii_code) {
-        case 44:
-            break;
-        case 45: // Allow a negative sign.
-            negative_count++;
-            if (negative_count !=0|| i != 0) {
-                return false;
-            }
-            break;
-        case 46: // Allow a decimal point.
-            decimal_count++;
-            if (decimal_count!=0) {
-                return false;
-            }
-            break;
-        default:
-            if (ascii_code < 48 || ascii_code > 57) {
-                return false;
-            }
-            break;
-        }
+    char * pEnd = NULL;
+    double d = strtod(st.c_str(), &pEnd);
+    if (*pEnd)
+    {
+        return false;
     }
     return true;
 }
@@ -166,10 +148,12 @@ bool Interpreter::parse(std::istream & expression) noexcept
 
     if(counter != 0)
     {
+
         return false;
     }
     if (!flag)
     {
+
         return false;
     }
     std::string valid_space = " ";
@@ -186,8 +170,13 @@ bool Interpreter::parse(std::istream & expression) noexcept
     {
         for (size_t n = 0; n < test_string.length(); n++)
         {
+                if(isnumeric(test_string))
+                   {
+                    break;
+                   }
             if (!isdigit( test_string[n] ))
             {
+
                 return false;
             }
         }
@@ -199,6 +188,7 @@ bool Interpreter::parse(std::istream & expression) noexcept
     }
     if (whole_str[0]=='('&& whole_str[1] == ')')
     {
+
         return false;
     }
 
@@ -213,9 +203,6 @@ bool Interpreter::parse(std::istream & expression) noexcept
         return false;
     }
     mylist = a;
-
-    
-    
     return true;
 }
 

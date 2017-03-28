@@ -24,8 +24,8 @@ private slots:
 private:
     QtInterpreter* qtInterpreter;
     CanvasWidget* canvas;
-    QLabel* messageLabel;
-    QLabel* scriptLabel;
+    
+
     REPLWidget* repl;
     MessageWidget* msg;
 };

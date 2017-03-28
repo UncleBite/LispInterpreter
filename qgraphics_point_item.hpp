@@ -2,11 +2,11 @@
 #define QGRAPHICS_POINT_ITEM_HPP
 
 
-#include <QGraphicsItem>
+#include <QGraphicsEllipseItem>
 #include <QPainter>
 #include <QRectF>
 #include <QPainterPath>
-class QGraphicsPointItem : public QGraphicsItem
+class QGraphicsPointItem : public QGraphicsEllipseItem
 {
 public:
     QGraphicsPointItem(qreal x, qreal y);
@@ -14,8 +14,8 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPainterPath shape()const;
 private:
-    int _x;
-    int _y;
+    double _x;
+    double _y;
 };
 
 #endif // QGRAPHICS_POINT_ITEM_HPP

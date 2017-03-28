@@ -3,19 +3,18 @@
 
 CanvasWidget::CanvasWidget(QWidget *parent) : QWidget(parent)
 {
-    scene = new QGraphicsScene();
-    view = new QGraphicsView(scene);
-    scene->setSceneRect(-400, -300,800, 600);
-
-
-    //QGraphicsArcItem* arc = new QGraphicsArcItem;
-    //this->addGraphic(arc);
+    scene = new QGraphicsScene(this);
+    //scene->setSceneRect(-400, -300,800, 600);
+    view = new QGraphicsView(scene,this);
+//    scene->addEllipse(
+auto canvas_layout= new QVBoxLayout;
+canvas_layout->addWidget(view);
+setLayout(canvas_layout);
 }
 
 void CanvasWidget::addGraphic(QGraphicsItem* item)
 {
     scene->addItem(item);
-    //qDebug()<<scene->items().size();
 }
 
 QSize CanvasWidget::minimumSizeHint() const

@@ -26,9 +26,64 @@ Expression Interpreter::eval()
     return exp;
 }
 
-
 Expression Interpreter::parseStatement(list node)
 {
+
+if (node.a.val.string_value == "" && node.a.val.type == None)
+ throwError("Error: eval error");
+
+if (node.a.val.string_value == "draw")
+{
+std::cout<<"(None)"<<std::endl;
+}
+
+if(node.a.val.string_value == "point")
+{
+    if(node.children.size() == 2)
+    {
+
+        auto first = parseExpression(node.children[0]);
+        auto second = parseExpression(node.children[1]);
+        if(first.isType(Number) && second.isType(Number)){
+
+            return Expression(std::make_tuple(first.val.num_value, second.val.num_value));
+        }
+    }
+    else
+    throwError("Error: POINT has invalid arguments");
+}
+
+if(node.a.val.string_value == "line")
+{
+    if(node.children.size() == 2)
+    {
+
+        auto first = parseExpression(node.children[0]);
+        auto second = parseExpression(node.children[1]);
+
+        if(first.isType(Point) && second.isType(Point))
+        {
+            return Expression(first.val.point_value, second.val.point_value);
+        }
+    }
+    else
+    throwError("Error: LINE has invalid arguments");
+}
+
+if(node.a.val.string_value == "arc")
+{
+    if(node.children.size() == 3)
+    {
+        auto start = parseExpression(node.children[0]);
+        auto end = parseExpression(node.children[1]);
+        auto angle = parseSymbol(node.children[2]);
+        if(start.isType(Point) && end.isType(Point) && angle.isType(Number)){
+
+            return Expression(start.val.point_value, end.val.point_value, angle.val.num_value);
+        }
+    }
+
+}
     return this->parseDefineStatement(node);
 }
 
@@ -40,11 +95,16 @@ Expression Interpreter::parseDefineStatement(list node)
         {
             Expression identifier = parseIdentifer(node.children[0]);
             Expression value = parseAssignmentValue(identifier.val.string_value, node.children[1]);
-            
-            if ( !value.isType(Number) && !value.isType(Boolean))
+
+            if (node.children[0].a.val.string_value =="pi"  )
             {
-            throw InterpreterSemanticError("Error: DEFINE wrong");
+                    throw InterpreterSemanticError("Error: DEFINE wrong");
             }
+
+//            if ( !value.isType(Number) && !value.isType(Boolean))
+//            {
+//            throw InterpreterSemanticError("Error: DEFINE wrong");
+//            }
             return value;
         }
         else {
@@ -284,7 +344,6 @@ Expression Interpreter::parseSymbol(list node){
         }
         else if (node.a.val.string_value == "<" )
         {
-            
             if (node.children.size() == 2)
             {
                 Expression temp1 = parseStatement(node.children[0]);

@@ -1,9 +1,5 @@
 #include "environment.hpp"
 
-
-
-
-
 Environment::Environment()
 {
     std::map<std::string,bool> boolean_map;
@@ -29,7 +25,6 @@ void Environment::add_boolean_map(std::string str,bool bool_value)
     {
         throw InterpreterSemanticError("Error: already defined");
     }
-
     return;
 }
 void Environment::add_number_map(std::string str, double num_value)

@@ -83,17 +83,30 @@ bool Expression::operator==(const Expression & exp) const noexcept
         {
             return this->val.num_value == exp.val.num_value;
         }
-        if (this->val.type == Symbol)
+        else if (this->val.type == Symbol)
         {
             return this->val.string_value == exp.val.string_value;
         }
-        if (this->val.type == Boolean)
+       else if (this->val.type == Boolean)
         {
             return this->val.bool_value == exp.val.bool_value;
         }
-    }
-    return false;
-}
+      }
+        if (this->val.type == Point)
+        {
+                return true;
+        }
+        else if (this->val.type == Line)
+        {
+            return true;
+        }
+        else if (this->val.type == Arc)
+        {
+            return true;
+        }
+ }
+
+
 
 bool Expression::isType(atom_type type)
 {

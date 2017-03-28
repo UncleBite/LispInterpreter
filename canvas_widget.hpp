@@ -24,6 +24,10 @@ public:
     QGraphicsScene* scene;
     QGraphicsView* view;
 
+    friend class QtInterpreter;
+
+
+
 signals:
 
 public slots:

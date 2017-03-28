@@ -6,7 +6,10 @@
 #include "main_window.hpp"
 #include "message_widget.hpp"
 #include "repl_widget.hpp"
-
+#include <QList>
+#include <iterator>
+#include <QDebug>
+#include <QTest>
 // ADD YOUR TESTS TO THIS CLASS !!!!!!!
 class TestGUI : public QObject {
   Q_OBJECT
@@ -58,6 +61,7 @@ void TestGUI::initTestCase() {
   scene = canvas->findChild<QGraphicsScene *>();
   QVERIFY2(scene,
            "Could not find QGraphicsScene instance in CanvasWidget instance.");
+    w.show();
 }
 
 void TestGUI::testREPLGood() {
@@ -83,8 +87,7 @@ void TestGUI::testREPLBad() {
   // send a string to the repl widget
   QTest::keyClicks(replEdit, "(foo)");
   QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
-
-  // check message
+// check message
   QVERIFY2(messageEdit->isReadOnly(),
            "Expected QLineEdit inside MessageWidget to be read-only.");
   QVERIFY2(messageEdit->text().startsWith("Error"), "Expected error message.");
@@ -133,51 +136,53 @@ void TestGUI::testREPLBad2Good() {
            "Expected no selcted text on successful eval.");
 }
 
-void TestGUI::testPoint() {
-
-  QVERIFY(repl && replEdit);
-  QVERIFY(canvas && scene);
-
-  // send a string to the repl widget
-  QTest::keyClicks(replEdit, "(draw (point 0 0))");
-  QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
-
-  // check canvas
-  QVERIFY2(scene->itemAt(QPointF(0, 0), QTransform()) != 0,
-           "Expected a point in the scene. Not found.");
-}
-
 void TestGUI::testLine() {
-
-  QVERIFY(repl && replEdit);
-  QVERIFY(canvas && scene);
-
-  // send a string to the repl widget
-  QTest::keyClicks(replEdit, "(draw (line (point 10 0) (point 0 10)))");
-  QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
-  
-  // check canvas
-  QVERIFY2(scene->itemAt(QPointF(10, 0), QTransform()) != 0,
-           "Expected a line in the scene. Not found.");
-  QVERIFY2(scene->itemAt(QPointF(0, 10), QTransform()) != 0,
-           "Expected a line in the scene. Not found.");
+    
+    QVERIFY(repl && replEdit);
+    QVERIFY(canvas && scene);
+    
+    // send a string to the repl widget
+    QTest::keyClicks(replEdit, "(draw (line (point 10 0) (point 0 10)))");
+    QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
+    
+    // check canvas
+    QVERIFY2(scene->itemAt(QPointF(10, 0), QTransform()) != 0,
+             "Expected a line in the scene. Not found.");
+    QVERIFY2(scene->itemAt(QPointF(0, 10), QTransform()) != 0,
+             "Expected a line in the scene. Not found.");
 }
+
+
+void TestGUI::testPoint() {
+    
+    QVERIFY(repl && replEdit);
+    QVERIFY(canvas && scene);
+    // send a string to the repl widget
+    QTest::keyClicks(replEdit, "(draw (point 0 0))");
+    QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
+    // check canvas
+    QVERIFY2(scene->itemAt(QPointF(0, 0), QTransform()) != 0,
+             "Expected a point in the scene. Not found.");
+}
+
 
 void TestGUI::testArc() {
-
-  QVERIFY(repl && replEdit);
-  QVERIFY(canvas && scene);
-
-  // send a string to the repl widget
-  QTest::keyClicks(replEdit, "(draw (arc (point 0 0) (point 100 0) pi))");
-  QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
-
-  // check canvas
-  QVERIFY2(scene->itemAt(QPointF(100, 0), QTransform()) != 0,
-           "Expected a point on the arc in the scene. Not found.");
-  QVERIFY2(scene->itemAt(QPointF(-100, 0), QTransform()) != 0,
-           "Expected a point on the arc in the scene. Not found.");
+    
+    QVERIFY(repl && replEdit);
+    QVERIFY(canvas && scene);
+    
+    // send a string to the repl widget
+    QTest::keyClicks(replEdit, "(draw (arc (point 0 0) (point 100 0) pi))");
+    QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
+    
+    // check canvas
+    QVERIFY2(scene->itemAt(QPointF(100, 0), QTransform()) != 0,
+             "Expected a point on the arc in the scene. Not found.");
+    QVERIFY2(scene->itemAt(QPointF(-100, 0), QTransform()) != 0,
+             "Expected a point on the arc in the scene. Not found.");
 }
+
+
 
 void TestGUI::testEnvRestore() {
 
@@ -188,7 +193,9 @@ void TestGUI::testEnvRestore() {
   QTest::keyClicks(replEdit, "(begin (draw (point -20 0)) (define pi 3))");
   QTest::keyClick(replEdit, Qt::Key_Return, Qt::NoModifier);
 
-  // check canvas
+    QGraphicsItem * temp = scene->itemAt(QPointF(-20, 0), QTransform());
+
+    // check canvas
   QVERIFY2(scene->itemAt(QPointF(-20, 0), QTransform()) == 0,
            "Did not expected a point in the scene. One found.");
 }
