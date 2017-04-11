@@ -1,6 +1,6 @@
 #include "qt_interpreter.hpp"
 #include <sstream>
-
+#include <math.h>
 QtInterpreter::QtInterpreter(QObject *parent) : QObject(parent)
 {
     qtEnv = QtEnvironment();
@@ -12,11 +12,11 @@ void QtInterpreter::parseAndEvaluate(QString entry)
     std::stringstream parsecommand;
     parsecommand<<str<<std::endl;
     auto success = true;
-QString numvalue;
+    QString numvalue;
     Expression expr;
     try{
         if(str =="(foo)")
-           throwError("Error invalid command");
+            throwError("Error invalid command");
         parse(parsecommand);
         expr = eval();
     }
@@ -34,9 +34,9 @@ QString numvalue;
         else if (expr.val.type ==Boolean)
         {
             if (expr.val.bool_value)
-               info("(True)");
+                info("(True)");
             else
-            info("(False)");
+                info("(False)");
         }
         else
         {
@@ -55,7 +55,7 @@ Expression QtInterpreter::parseDrawStatement(list node){
     if(node.children.empty()){
         throwError("Error: empty children");
     }
-
+    
     Expression temp;
     for (int i = 0; i<node.children.size(); i++)
     {
@@ -72,13 +72,13 @@ Expression QtInterpreter::parseExpression(list node){
     if(value == LINE)
     {
         return parseLineExpression(node);
-    } else if(value == ARC)
+    } if(value == ARC)
     {
         return parseArcExpression(node);
-    } else if(value == POINT){
+    } if(value == POINT){
         return parsePointExpression(node);
     }
-
+    
     return Interpreter::parseExpression(node);
 }
 
@@ -87,7 +87,7 @@ Expression QtInterpreter::parseArcExpression(list node){
         auto start = parseExpression(node.children[0]);
         auto end = parseExpression(node.children[1]);
         auto angle = parseSymbol(node.children[2]);
-
+        
         if(start.isType(Point) && end.isType(Point) && angle.isType(Number)){
             return Expression(start.val.point_value, end.val.point_value, angle.val.num_value);
         }
@@ -125,13 +125,14 @@ Expression QtInterpreter::parseAssignmentValue(std::string identifier, list node
             qtEnv.add_line_map(identifier, line);
         }
         return line;
-    } else if(value == ARC){
+    }
+    if(value == ARC){
         Expression arc = parseArcExpression(node);
         if(arc.isType(Arc) && qtEnv.arc_allow(identifier)){
             qtEnv.add_arc_map(identifier, arc);
         }
         return arc;
-    } else if(value == POINT){
+    } if(value == POINT){
         Expression point = parsePointExpression(node);
         if(point.isType(Point) && qtEnv.point_allow(identifier)){
             qtEnv.add_point_map(identifier, point);
@@ -163,20 +164,19 @@ void QtInterpreter::createGraphicsItem(Expression expr)
     if(expr.isType(Line))
     {
         QGraphicsLineItem* line = new QGraphicsLineItem;
-        auto a = std::get<1>(expr.val.line_value);
-        auto b = std::get<0>(expr.val.line_value);
         line->setLine(std::get<0>(expr.val.point_value), std::get<1>(expr.val.point_value), std::get<0>(expr.val.line_value), std::get<1>(expr.val.line_value));
         this->drawGraphic(line);
     }
     else if(expr.isType(Arc))
     {
-        QGraphicsArcItem* arc = new QGraphicsArcItem;
-        arc->setArguments(std::get<0>(expr.val.point_value), std::get<1>(expr.val.point_value), std::get<0>(expr.val.line_value), std::get<1>(expr.val.line_value), expr.val.num_value);
+        QGraphicsArcItem* arc = new QGraphicsArcItem(std::get<0>(expr.val.point_value),std::get<1>(expr.val.point_value),std::get<0>(expr.val.line_value),std::get<1>(expr.val.line_value),expr.val.num_value);
+        
         this->drawGraphic(arc);
     }
     else if(expr.isType(Point))
     {
-        QGraphicsEllipseItem* point = new QGraphicsPointItem(std::get<0>(expr.val.point_value), std::get<1>(expr.val.point_value));
+        QGraphicsEllipseItem* point = new QGraphicsEllipseItem(std::get<0>(expr.val.point_value)-1, std::get<1>(expr.val.point_value)-1,2.0,2.0);
+        point->setBrush(Qt::SolidPattern);
         this->drawGraphic(point);
     }
 }

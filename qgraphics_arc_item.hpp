@@ -9,18 +9,23 @@
 class QGraphicsArcItem : public QGraphicsEllipseItem
 {
 public:
-    QGraphicsArcItem(QGraphicsItem *parent = Q_NULLPTR);
-
+    QGraphicsArcItem(double x1, double y1, double x2, double y2, double angle, QGraphicsItem *parent = Q_NULLPTR);
+    
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR);
-    QRectF boundingRect()const;
-    QPainterPath shape()const;
-    void setArguments(double x, double y, double width, double height, double angle);
-
+    
+    
 private:
     int _x;
     int _y;
-    int _d;
-    int _start;
+    double _x1;
+    double _y1;
+    double _x2;
+    double _y2;
+    
+    double c;
+    int _r;
+    double w;
+    double h;
     int _angle;
 };
 

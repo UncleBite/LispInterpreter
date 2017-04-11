@@ -5,18 +5,19 @@ std::list<std::string> tokenize(const std::string & str)
 {
     std::list<std::string> tokens;
     const char * s = str.c_str();
-    while (*s)
+    while (*s!=0)
     {
         while (*s == ' ')
-            ++s;
+        { ++s;}
         while (*s == '\r')
-        ++s;
+        {++s;}
         if (*s == '(' || *s == ')')
-            tokens.push_back(*s++ == '(' ? "(" : ")");
+        {tokens.push_back(*s++ == '(' ? "(" : ")");
+        }
         else {
             const char * t = s;
-            while (*t && *t != ' ' && *t != '(' && *t != ')' && *t!= '\r')
-                ++t;
+            while (*t !=0 && *t != ' ' && *t != '(' && *t != ')' && *t!= '\r')
+            { ++t;}
             tokens.push_back(std::string(s, t));
             s = t;
         }
@@ -88,6 +89,18 @@ Expression atom(std::string token)
     {
         return Expression(atof(token.c_str()));//number
     }
+    else if (token == "line")
+    {
+        return Expression(true);
+    }
+    else if (token == "True")
+    {
+        return Expression(true);
+    }
+    else if (token == "True")
+    {
+        return Expression(true);
+    }
 
     else
     {
@@ -105,11 +118,7 @@ Expression atom(std::string token)
 bool isnumeric(std::string st) {
     char * pEnd = NULL;
     double d = strtod(st.c_str(), &pEnd);
-    if (*pEnd)
-    {
-        return false;
-    }
-    return true;
+    return (*pEnd==0);
 }
 
 bool Interpreter::parse(std::istream & expression) noexcept
@@ -198,12 +207,8 @@ bool Interpreter::parse(std::istream & expression) noexcept
 
 
     a = build_ast(b);
-    if(b.size()!=0 && b.front()!="")
-    {
-        return false;
-    }
     mylist = a;
-    return true;
+    return !(b.size()!=0 && b.front()!="");
 }
 
 

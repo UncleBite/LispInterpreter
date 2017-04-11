@@ -34,9 +34,9 @@ int main(int argc, char *argv[])
                 {
                     std::cout<<"Error: eval not valid"<<std::endl;
                 }
-                else
+                else{
                 a.eval();
-                
+                }
             } catch (InterpreterSemanticError ex) {
                 std::cout << ex.what() << std::endl;
             }
@@ -77,7 +77,9 @@ int main(int argc, char *argv[])
                     exit(EXIT_FAILURE);
             }
             else
+            {
             a.eval();
+            }
         } catch (InterpreterSemanticError ex2) {
             std::cout << ex2.what() << std::endl;
             exit(EXIT_FAILURE);

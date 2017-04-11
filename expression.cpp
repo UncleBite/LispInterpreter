@@ -1,6 +1,6 @@
 #include "expression.hpp"
 
-
+#include <iostream>
 Expression::Expression()
 {
     val.type = None;
@@ -96,11 +96,11 @@ bool Expression::operator==(const Expression & exp) const noexcept
         {
                 return true;
         }
-        else if (this->val.type == Line)
+        if (this->val.type == Line)
         {
             return true;
         }
-        else if (this->val.type == Arc)
+        if (this->val.type == Arc)
         {
             return true;
         }
